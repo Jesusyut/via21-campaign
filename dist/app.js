@@ -4,6 +4,8 @@ const params=new URLSearchParams(location.search),ad=params.get('ad')||'direct';
 const leadTracking=window.createVia21LeadTracking({adSource:ad});
 const variants={free:[`1 Month Free in the Biltmore`,`Remodeled 1 & 2 bedrooms from ${config.price}. Only a few left at this price.`],renewal:[`Don't Renew Until You Compare`,`Phoenix rents are dropping. See what ${config.price} gets you in the Biltmore.`],holiday:[`Move In Before the Holidays`,`Tour this week, apply online in minutes, move in by December.`],location:[`Biltmore Location. Not Biltmore Rent.`,`Minutes from Biltmore shopping and Camelback, 13 minutes to Sky Harbor.`],checklist:[`Your Apartment Checklist, Checked`,`Biltmore area, washer and dryer, pets OK, under $1,700.`]};
 variants['1-month-free']=variants.free;
+variants.offer=variants.free;
+variants.area=["Close to Everything. Quiet at Home.","Minutes from Downtown and Old Town Scottsdale. Furnished homes available. Answer 3 quick questions and we'll text you tour times."];
 if(variants[ad]){ $('#headline').textContent=variants[ad][0];$('#subheadline').textContent=variants[ad][1]; }else{$('#headline').innerHTML='Prime Location<br>Apartments in PHX';$('#subheadline').textContent=`Remodeled 1 & 2 bedrooms from ${config.price} with ${config.offer}. Answer 3 quick questions and we'll text you open tour times.`;}
 $('#year').textContent=new Date().getFullYear();
 function privacy(e){if(config.privacyUrl){location.href=config.privacyUrl;return;}e.preventDefault();$('#privacy').showModal();}

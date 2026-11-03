@@ -27,3 +27,5 @@ dialog{border:1px solid #ddd;max-width:500px;padding:30px}dialog::backdrop{backg
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
 .honeypot{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+
+.header-tools{display:flex;align-items:center;gap:24px}.language-toggle{display:flex;align-items:center;gap:2px}.language-toggle>span{font-size:10px;color:#bbb}.language-toggle button{font:inherit;font-size:11px;min-height:44px;padding:10px 8px;border:0;background:transparent;color:#777}.language-toggle button[aria-pressed="true"]{color:#111;text-decoration:underline;text-underline-offset:5px}.language-toggle button:disabled{cursor:wait;opacity:.5}@media(max-width:600px){.header-tools{gap:10px}.header-tools .header-location{display:none}.language-toggle button{font-size:10px;padding:10px 6px}}

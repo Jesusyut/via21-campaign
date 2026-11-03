@@ -3,8 +3,7 @@ const $=s=>document.querySelector(s);
 const params=new URLSearchParams(location.search),ad=params.get('ad')||'direct';
 const variants={free:[`1 Month Free in the Biltmore`,`Remodeled 1 & 2 bedrooms from ${config.price}. Only a few left at this price.`],renewal:[`Don't Renew Until You Compare`,`Phoenix rents are dropping. See what ${config.price} gets you in the Biltmore.`],holiday:[`Move In Before the Holidays`,`Tour this week, apply online in minutes, move in by December.`],location:[`Biltmore Location. Not Biltmore Rent.`,`Minutes from Biltmore shopping and Camelback, 13 minutes to Sky Harbor.`],checklist:[`Your Apartment Checklist, Checked`,`Biltmore area, washer and dryer, pets OK, under $1,700.`]};
 variants['1-month-free']=variants.free;
-if(variants[ad]){ $('#headline').textContent=variants[ad][0];$('#subheadline').textContent=variants[ad][1]; }else{$('#headline').innerHTML=`Biltmore<br>Apartments<br>From <span></span>`;$('#headline span').textContent=config.price;$('#subheadline').textContent=`Remodeled 1 & 2 bedrooms with ${config.offer}. Answer 3 quick questions and we'll text you open tour times.`;}
-$('#offer').textContent=config.offer.charAt(0).toUpperCase()+config.offer.slice(1)+'.';
+if(variants[ad]){ $('#headline').textContent=variants[ad][0];$('#subheadline').textContent=variants[ad][1]; }else{$('#headline').innerHTML=`Biltmore Apartments<br>From <span></span>`;$('#headline span').textContent=config.price;$('#subheadline').textContent=`Remodeled 1 & 2 bedrooms with ${config.offer}. Answer 3 quick questions and we'll text you open tour times.`;}
 $('#year').textContent=new Date().getFullYear();
 function privacy(e){if(config.privacyUrl){location.href=config.privacyUrl;return;}e.preventDefault();$('#privacy').showModal();}
 $('#privacy-link').onclick=privacy;$('#close-privacy').onclick=()=>$('#privacy').close();
@@ -26,6 +25,6 @@ function render(){
  h.focus({preventScroll:true});
 }
 function success(){$('.quiz-top').hidden=true;$('.progress').hidden=true;$('#quiz-content').innerHTML='<div class="success-mark">✓</div><h2>You\'re All Set</h2><p class="success-body">Check your texts. We\'ll send open tour times shortly.</p><a class="primary calendar">Book My Tour Now <span>↗</span></a>';$('.calendar').href=config.calendarUrl;}
-document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>{$('#landing').hidden=true;$('#quiz').hidden=false;$('.header-cta').hidden=true;render();window.scrollTo(0,0);});
-$('#back').onclick=()=>{if(step>0){step--;render();}else{$('#landing').hidden=false;$('#quiz').hidden=true;$('.header-cta').hidden=false;}};
+document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>{$('#landing').hidden=true;$('#quiz').hidden=false;render();window.scrollTo(0,0);});
+$('#back').onclick=()=>{if(step>0){step--;render();}else{$('#landing').hidden=false;$('#quiz').hidden=true;}};
 if(config.pixelId&&/^\d+$/.test(config.pixelId)){window.fbq=function(){(window.fbq.queue=window.fbq.queue||[]).push(arguments)};window._fbq=window.fbq;window.fbq.loaded=true;window.fbq.version='2.0';const script=document.createElement('script');script.async=true;script.src='https://connect.facebook.net/en_US/fbevents.js';document.head.append(script);fbq('init',config.pixelId);fbq('track','PageView');}

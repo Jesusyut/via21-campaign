@@ -25,3 +25,5 @@ label{display:block;font-size:12px;margin:0 0 20px}input{width:100%;display:bloc
 dialog{border:1px solid #ddd;max-width:500px;padding:30px}dialog::backdrop{background:#0005}dialog p{font-size:14px;line-height:1.7}
 @media(max-width:600px){header{padding:25px 24px}.brand{font-size:26px}.header-location{font-size:10px}#landing{padding:48px 24px 38px}h1{font-size:clamp(43px,10.5vw,62px);letter-spacing:-2.1px}h1 span{letter-spacing:-2px}#subheadline{font-size:15px;max-width:350px}.eyebrow{font-size:9px;margin-bottom:24px}.address{margin-top:40px;font-size:10px}footer{padding:24px;font-size:9px;gap:12px}footer small{font-size:8px}#quiz{margin-top:15px;padding:20px 24px 50px}h2{font-size:32px}.progress{margin-bottom:36px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.honeypot{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}

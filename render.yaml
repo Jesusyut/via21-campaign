@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: via21-campaign-test
+    runtime: static
+    buildCommand: node --check dist/app.js
+    staticPublishPath: ./dist

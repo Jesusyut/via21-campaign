@@ -3,7 +3,7 @@ let csrf='',leads=[],view='board',sortKey='created_at',sortDirection=-1,currentI
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'America/Phoenix',dateStyle:'medium',timeStyle:'short'})+' MST':'—';
 function age(value){const m=Math.max(0,Math.floor((Date.now()-Date.parse(value))/60000));return m<1?'Just now':m<60?m+'m ago':m<1440?Math.floor(m/60)+'h ago':Math.floor(m/1440)+'d ago';}
-function sms(lead){return 'sms:+'+lead.phone+'?body='+encodeURIComponent("Hey "+lead.first_name+", it's Caesar with Via 21. Saw you're looking for a "+lead.bedrooms+"BR. I've got tour times tomorrow. What works for you?");}
+function sms(lead){return 'sms:+'+lead.phone+(/iPad|iPhone|iPod/.test(navigator.userAgent)?'&body=':'?body=')+encodeURIComponent("Hey "+lead.first_name+", it's Caesar with Via 21. Saw you're looking for a "+lead.bedrooms+"BR. I've got tour times tomorrow. What works for you?");}
 function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;setTimeout(()=>$('#toast').hidden=true,3500);}
 async function api(path,options={}){
  const response=await fetch('/api/admin'+path,{...options,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf,...options.headers}});

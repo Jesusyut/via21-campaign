@@ -50,6 +50,7 @@ export async function updateLead(db,id,input,now=new Date()){
   if(input.lost_reason!==undefined)lead.lost_reason=text(input.lost_reason,1000)||null;
   if(lead.stage==='Lost'&&!lead.lost_reason)throw problem('Lost reason is required');
   if(input.tour_at!==undefined){if(input.tour_at!==null&&input.tour_at!==''&&!Number.isFinite(Date.parse(input.tour_at)))throw problem('Invalid tour date');lead.tour_at=input.tour_at?new Date(input.tour_at).toISOString():null;}
+  if(lead.stage==='Tour Scheduled'&&!lead.tour_at)throw problem('Tour date and time are required');
   if(input.note!==undefined){const body=text(input.note,5000);if(!body)throw problem('Note is empty');lead.notes.push({id:randomUUID(),at,author:'Caesar',text:body});}
  });
 }

@@ -1,4 +1,5 @@
 const $=s=>document.querySelector(s),stages=['New','Contacted','Tour Scheduled','Toured','Applied','Leased','Lost'];
+let reconnectTimer;
 let csrf='',leads=[],view='board',sortKey='created_at',sortDirection=-1,currentId=null,status={};
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=value=>value?new Date(value).toLocaleString('en-US',{timeZone:'America/Phoenix',dateStyle:'medium',timeStyle:'short'})+' MST':'—';
@@ -7,10 +8,10 @@ function sms(lead){return 'sms:+'+lead.phone+(/iPad|iPhone|iPod/.test(navigator.
 function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;setTimeout(()=>$('#toast').hidden=true,3500);}
 async function api(path,options={}){
  const response=await fetch('/api/admin'+path,{...options,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf,...options.headers}});
- const data=await response.json();if(!response.ok){if(response.status===401)showLogin();throw Error(data.error||'Request failed');}return data;
+ const data=await response.json();if(!response.ok){if(response.status===401)showLogin();throw Object.assign(new Error(data.error||'Request failed'),{status:response.status});}return data;
 }
-function showLogin(){$('#login').hidden=false;$('#dashboard').hidden=true;if($('#detail').open)$('#detail').close();csrf='';leads=[];}
-async function start(){try{const session=await api('/session');csrf=session.csrf;$('#login').hidden=true;$('#dashboard').hidden=false;await load();const match=location.pathname.match(/^\/admin\/leads\/([^/]+)$/);if(match)await openDetail(match[1]);}catch{showLogin();}}
+function showLogin(){clearTimeout(reconnectTimer);$('#session-status').hidden=true;$('#login').hidden=false;$('#dashboard').hidden=true;if($('#detail').open)$('#detail').close();csrf='';leads=[];}
+async function start(){clearTimeout(reconnectTimer);try{const session=await api('/session');csrf=session.csrf;$('#session-status').hidden=true;$('#login').hidden=true;$('#dashboard').hidden=false;await load();const match=location.pathname.match(/^\/admin\/leads\/([^/]+)$/);if(match&&!$('#detail').open)await openDetail(match[1]);}catch(error){if(error.status===401){showLogin();return;}if(csrf&&!$('#dashboard').hidden){$('#board-error').textContent='Connection interrupted. Reconnecting…';}else{$('#login').hidden=true;$('#session-status').hidden=false;$('#session-status').textContent='Reconnecting to your saved session…';}reconnectTimer=setTimeout(start,5000);}}
 async function load(){
  const data=await api('/leads');leads=data.leads;
  status=await api('/status');
@@ -18,7 +19,7 @@ async function load(){
  $('#sources').textContent='By source: '+(Object.entries(data.stats.by_source).map(([k,v])=>k+' '+v).join(' · ')||'No leads yet')+'   |   '+Object.entries(data.stats.by_stage).map(([k,v])=>k+' '+v).join(' · ');
  const missing=[];if(!status.telegram_configured)missing.push('Telegram');if(!status.email_configured)missing.push('Email');if(!status.capi_configured)missing.push('CAPI');if(!status.office_email_configured)missing.push('Office email');
  $('#status').textContent=(status.free_test_mode?'Free test hosting: service sleep can delay notifications and scheduled jobs. ':'')+(missing.length?'Setup pending: '+missing.join(', ')+'. ':'All primary integrations configured. ')+(status.sheet_enabled?'Sheet backup enabled.':'Optional Sheet backup off.');
- render();$('#last-updated').textContent='Updated '+new Date().toLocaleTimeString()+' · Times shown in Phoenix time';
+ $('#board-error').textContent='';render();$('#last-updated').textContent='Updated '+new Date().toLocaleTimeString()+' · Times shown in Phoenix time';
 }
 function filtered(){const query=$('#search').value.toLowerCase(),stage=$('#stage-filter').value;return leads.filter(l=>(!stage||l.stage===stage)&&[l.first_name,l.last_name,l.phone,l.email].join(' ').toLowerCase().includes(query));}
 function render(){

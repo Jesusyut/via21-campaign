@@ -7,6 +7,10 @@ import {rateLimit,listLeads,getLead,changeLead} from './db.mjs';
 import {saveLead,updateLead,handoff,stats,csv,UUID,problem} from './pipeline.mjs';
 import {runJobs} from './jobs.mjs';
 const root=path.resolve(fileURLToPath(new URL('../',import.meta.url)));
+const SESSION_SECONDS=30*24*60*60;
+const SESSION_MS=SESSION_SECONDS*1000;
+const SESSION_RENEW_WINDOW=29*24*60*60*1000;
+function sessionCookie(token,production){return 'via21_session='+token+'; Path=/; HttpOnly; SameSite=Strict; Max-Age='+SESSION_SECONDS+'; Expires='+new Date(Date.now()+SESSION_MS).toUTCString()+(production?'; Secure':'');}
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
 async function body(req){
@@ -52,8 +56,8 @@ export function createApp(db,{env=process.env}={}){
     const valid=timingSafeEqual(scryptSync(supplied,salt,64),expected);
     if(data.username!==(env.ADMIN_USERNAME||'caesar')||!valid)throw problem('Incorrect login',401);
     const token=randomBytes(32).toString('hex'),csrf=randomBytes(32).toString('hex');
-    await db.query('INSERT INTO sessions (id,expires_at,data) VALUES ($1,$2,$3)',[digest(token),Date.now()+43200000,JSON.stringify({csrf})]);
-    res.setHeader('Set-Cookie','via21_session='+token+'; Path=/; HttpOnly; SameSite=Strict; Max-Age=43200'+(env.NODE_ENV==='production'?'; Secure':''));
+    await db.query('INSERT INTO sessions (id,expires_at,data) VALUES ($1,$2,$3)',[digest(token),Date.now()+SESSION_MS,JSON.stringify({csrf})]);
+    res.setHeader('Set-Cookie',sessionCookie(token,env.NODE_ENV==='production'));
     return json(res,200,{csrf});
    }
    let session;
@@ -63,6 +67,11 @@ export function createApp(db,{env=process.env}={}){
     const row=(await db.query('SELECT data,expires_at FROM sessions WHERE id=$1',[digest(token)])).rows[0];
     if(!row||Number(row.expires_at)<=Date.now())throw problem('Login required',401);
     session=JSON.parse(row.data);
+    // Refresh once a day; also upgrades still-valid legacy 12-hour sessions.
+    if(Number(row.expires_at)-Date.now()<SESSION_RENEW_WINDOW){
+     await db.query('UPDATE sessions SET expires_at=$1 WHERE id=$2',[Date.now()+SESSION_MS,digest(token)]);
+     res.setHeader('Set-Cookie',sessionCookie(token,env.NODE_ENV==='production'));
+    }
     if(!['GET','HEAD'].includes(req.method)&&(req.headers['x-csrf-token']!==session.csrf||(req.headers.origin&&req.headers.origin!==origin)))throw problem('Invalid session request',403);
     if(pathname==='/api/admin/session')return json(res,200,{csrf:session.csrf,username:env.ADMIN_USERNAME||'caesar'});
     if(pathname==='/api/admin/logout'&&req.method==='POST'){await db.query('DELETE FROM sessions WHERE id=$1',[digest(token)]);res.setHeader('Set-Cookie','via21_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0'+(env.NODE_ENV==='production'?'; Secure':''));return json(res,200,{ok:true});}
